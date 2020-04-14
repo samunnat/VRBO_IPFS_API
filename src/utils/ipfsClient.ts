@@ -1,7 +1,7 @@
-import * as IPFS from 'ipfs-http-client';
+const IPFS = require('ipfs-http-client');
 import { Credentials } from 'aws-sdk';
 import { Auth } from 'aws-amplify';
-import logger from './logger';
+//import logger from './logger';
 
 const ipfsConfig = { protocol: 'http', host: '127.0.0.1', port: '5001' };
 
@@ -18,20 +18,20 @@ interface LogObject {
 }
 
 const logError = function(logObj: LogObject): void {
-    var authData;
-    Auth.currentSession().then(data => {
-        authData = data.getIdToken();
-    }).catch(err => {
-        authData = err;
-    });
+    // var authData;
+    // Auth.currentSession().then(data => {
+    //     authData = data.getIdToken();
+    // }).catch(err => {
+    //     authData = err;
+    // });
 
-    logObj.authData = authData;
+    // logObj.authData = authData;
 
-    logger.push({
-        tag: 'error',
-        page: 'IPFS',
-        details: logObj
-    });
+    // logger.push({
+    //     tag: 'error',
+    //     page: 'IPFS',
+    //     details: logObj
+    // });
 }
 
 /**
