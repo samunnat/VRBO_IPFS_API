@@ -1,4 +1,5 @@
 const IPFS = require('ipfs-http-client');
+const { performance } = require('perf_hooks');
 import { Credentials } from 'aws-sdk';
 import { Auth } from 'aws-amplify';
 //import logger from './logger';
@@ -18,6 +19,7 @@ interface LogObject {
 }
 
 const logError = function(logObj: LogObject): void {
+    console.log(logObj.error);
     // var authData;
     // Auth.currentSession().then(data => {
     //     authData = data.getIdToken();
@@ -45,7 +47,7 @@ export const getLatestFolder = function(folderHash: string, folderName: string):
 
     const start = performance.now();
 
-    return ipfsClient.files.cp(`${folderHash}`, `/${folderName}_tmp`)
+    return ipfsClient.files.cp(`/ipfs/${folderHash}`, `/${folderName}_tmp`)
     .then(() => {
         return ipfsClient.files.stat(`/${folderName}`)
         .catch(() => {
@@ -103,12 +105,12 @@ export const publishFolder = function(folderPath: string): Promise<string> {
 
         folderHash = hash;
 
-        console.log(`Publishing ${folderPath}: ${hash} to the dht`);
-        return ipfsClient.dht.provide(hash);
+        console.log(`Providing ${folderPath}: ${hash}`);
+        return ipfsClient.dht.provide(hash, { recursive: true });
     })
-    .then(() => {
+    .then((res: any) => {
         console.log("Successfully broadcast record to the dht");
-
+        
         return folderHash;
     })
     .catch((err: any) => {
@@ -122,7 +124,6 @@ export const publishFolder = function(folderPath: string): Promise<string> {
     })
     .finally(() => {
         const end = performance.now();
-
         console.log(`publishing IPFS Folder ${folderPath} ran for ${end - start} milliseconds.`);
     })
 }
@@ -135,8 +136,7 @@ export const publishFolder = function(folderPath: string): Promise<string> {
 const getFileHash = function(ipfsFilePath: string): Promise<string> {
     return ipfsClient.files.stat(ipfsFilePath)
     .then((fileInfo: any) => {
-        let fileHash = fileInfo.hash;
-
+        let fileHash = fileInfo.cid.toString();
         return fileHash;
     })
     .catch((err: any) => {

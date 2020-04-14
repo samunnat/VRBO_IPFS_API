@@ -7,7 +7,7 @@ const router = express.Router();
 router.post("/pull", (req, res) => {
   console.log(req.body);
 
-  const [folderHash, propertyID] = req.body;
+  const { folderHash, propertyID } = req.body;
 
   getLatestFolder(folderHash, propertyID)
   .then((success: boolean) => {
@@ -28,9 +28,9 @@ router.post("/pull", (req, res) => {
 router.post("/delete", (req, res) => {
   console.log(req.body);
 
-  const [propertyID] = req.body;
+  const { propertyID } = req.body;
 
-  deleteFolder(propertyID)
+  deleteFolder(`/${propertyID}`)
   .then((success: boolean) => {
     if (success) {
       res.status(200).send(`Successfully deleted ${propertyID}`);
