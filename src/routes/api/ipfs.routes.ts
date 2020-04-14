@@ -1,6 +1,6 @@
-const express = require('express');
+import express from "express";
 
-const { getLatestFolder, publishFolder, deleteFolder } = require('../../utils/ipfsClient');
+import { getLatestFolder, publishFolder, deleteFolder } from "../../utils/ipfsClient";
 
 const router = express.Router();
 

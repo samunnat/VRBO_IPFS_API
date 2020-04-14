@@ -1,6 +1,6 @@
-const loggly = require('loggly-jslogger');
+import { LogglyTracker } from 'loggly-jslogger';
 
-const logger = new loggly.LogglyTracker();
+const logger = new LogglyTracker();
 
 logger.push({ 'logglyKey': process.env.LOGLY_KEY });
 

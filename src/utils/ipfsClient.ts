@@ -1,8 +1,7 @@
-const { IPFS } = require('ipfs-http-client');
-const { Credentials } = require('aws-sdk');
-const { Auth } = require('aws-amplify');
-
-const logger = require('../../utils/logger');
+import * as IPFS from 'ipfs-http-client';
+import { Credentials } from 'aws-sdk';
+import { Auth } from 'aws-amplify';
+import logger from './logger';
 
 const ipfsConfig = { protocol: 'http', host: '127.0.0.1', port: '5001' };
 
