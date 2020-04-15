@@ -1,6 +1,6 @@
-const webpack = require("webpack");
-const path = require("path");
-const nodeExternals = require("webpack-node-externals");
+import webpack from "webpack";
+import path from "path";
+import nodeExternals from "webpack-node-externals";
 
 module.exports = {
   entry: ["webpack/hot/poll?100", "./src/index.ts"],

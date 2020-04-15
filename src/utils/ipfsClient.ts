@@ -1,10 +1,9 @@
-const IPFS = require('ipfs-http-client');
-const { performance } = require('perf_hooks');
-import { Credentials } from 'aws-sdk';
-import { Auth } from 'aws-amplify';
-//import logger from './logger';
+import { performance } from "perf_hooks";
 
-const ipfsConfig = { protocol: 'http', host: '127.0.0.1', port: '5001' };
+import IPFS from "ipfs-http-client";
+// import logger from './logger';
+
+const ipfsConfig = { protocol: "http", host: "127.0.0.1", port: "5001" };
 
 /**
  * IPFS HTTP Client that interfaces with user's locally running node
@@ -12,29 +11,29 @@ const ipfsConfig = { protocol: 'http', host: '127.0.0.1', port: '5001' };
 const ipfsClient = IPFS(ipfsConfig);
 
 interface LogObject {
-    status: number;
-    error: string;
-    statusText: string;
-    authData?: any;
+  status: number;
+  error: string;
+  statusText: string;
+  authData?: any;
 }
 
 const logError = function(logObj: LogObject): void {
-    console.log(logObj.error);
-    // var authData;
-    // Auth.currentSession().then(data => {
-    //     authData = data.getIdToken();
-    // }).catch(err => {
-    //     authData = err;
-    // });
+  console.log(logObj.error);
+  // var authData;
+  // Auth.currentSession().then(data => {
+  //     authData = data.getIdToken();
+  // }).catch(err => {
+  //     authData = err;
+  // });
 
-    // logObj.authData = authData;
+  // logObj.authData = authData;
 
-    // logger.push({
-    //     tag: 'error',
-    //     page: 'IPFS',
-    //     details: logObj
-    // });
-}
+  // logger.push({
+  //     tag: 'error',
+  //     page: 'IPFS',
+  //     details: logObj
+  // });
+};
 
 /**
  * Updates VRBO_Capstone folder to the latest version
@@ -42,48 +41,53 @@ const logError = function(logObj: LogObject): void {
  * @param folderName Name of root folder (e.g. "Property1")
  * @returns Whether the folder retrieval/update succeeded or not
  */
-export const getLatestFolder = function(folderHash: string, folderName: string): Promise<boolean> {
-    console.log(`trying to get ${folderHash}`);
+export const getLatestFolder = function(
+  folderHash: string,
+  folderName: string
+): Promise<boolean> {
+  console.log(`trying to get ${folderHash}`);
 
-    const start = performance.now();
+  const start = performance.now();
 
-    return ipfsClient.files.cp(`/ipfs/${folderHash}`, `/${folderName}_tmp`)
+  return ipfsClient.files
+    .cp(`/ipfs/${folderHash}`, `/${folderName}_tmp`)
     .then(() => {
-        return ipfsClient.files.stat(`/${folderName}`)
-        .catch(() => {
-            return false;
-        });
+      return ipfsClient.files.stat(`/${folderName}`).catch(() => {
+        return false;
+      });
     })
     .then((folderInfo: any) => {
-        if (!folderInfo) {
-            // Property's folder doesn't exist on node - can skip its deletion step
-            return true;
-        }
-
-        return ipfsClient.files.rm(`/${folderName}`, {recursive: true});
-    })
-    .then(() => {
-        return ipfsClient.files.mv(`/${folderName}_tmp`, `/${folderName}`);
-    })
-    .then(() => {
-        console.log(`successfully got ${folderName}`);
+      if (!folderInfo) {
+        // Property's folder doesn't exist on node - can skip its deletion step
         return true;
-    })
-    .catch((err) => {
-        logError({
-            status: 500,
-            error: err,
-            statusText: `getLatestFolder FAILURE: ${folderName}`,
-        });
+      }
 
-        return false;
+      return ipfsClient.files.rm(`/${folderName}`, { recursive: true });
+    })
+    .then(() => {
+      return ipfsClient.files.mv(`/${folderName}_tmp`, `/${folderName}`);
+    })
+    .then(() => {
+      console.log(`successfully got ${folderName}`);
+      return true;
+    })
+    .catch(err => {
+      logError({
+        status: 500,
+        error: err,
+        statusText: `getLatestFolder FAILURE: ${folderName}`
+      });
+
+      return false;
     })
     .finally(() => {
-        const end = performance.now();
+      const end = performance.now();
 
-        console.log(`getting IPFS Folder ${folderName} ran for ${end - start} milliseconds.`);
+      console.log(
+        `getting IPFS Folder ${folderName} ran for ${end - start} milliseconds.`
+      );
     });
-}
+};
 
 /**
  * Will update the key-value store of property_id->ipfs_hash with current folder's hash
@@ -92,41 +96,43 @@ export const getLatestFolder = function(folderHash: string, folderName: string):
  * @returns Whether publish was successful or not
  */
 export const publishFolder = function(folderPath: string): Promise<string> {
-    
-    const start = performance.now();
+  const start = performance.now();
 
-    let folderHash = null;
+  let folderHash = null;
 
-    return getFileHash(folderPath)
+  return getFileHash(folderPath)
     .then((hash: string) => {
-        if (!hash) {
-            return false;
-        }
+      if (!hash) {
+        return false;
+      }
 
-        folderHash = hash;
+      folderHash = hash;
 
-        console.log(`Providing ${folderPath}: ${hash}`);
-        return ipfsClient.dht.provide(hash, { recursive: true });
+      console.log(`Providing ${folderPath}: ${hash}`);
+      return ipfsClient.dht.provide(hash, { recursive: true });
     })
-    .then((res: any) => {
-        console.log("Successfully broadcast record to the dht");
-        
-        return folderHash;
+    .then(() => {
+      console.log("Successfully broadcast record to the dht");
+
+      return folderHash;
     })
     .catch((err: any) => {
-        logError({
-            status: 500,
-            error: err,
-            statusText: `publishFolder FAILURE: ${folderPath}`,
-        });
+      logError({
+        status: 500,
+        error: err,
+        statusText: `publishFolder FAILURE: ${folderPath}`
+      });
 
-        return null;
+      return null;
     })
     .finally(() => {
-        const end = performance.now();
-        console.log(`publishing IPFS Folder ${folderPath} ran for ${end - start} milliseconds.`);
-    })
-}
+      const end = performance.now();
+      console.log(
+        `publishing IPFS Folder ${folderPath} ran for ${end -
+          start} milliseconds.`
+      );
+    });
+};
 
 /**
  * Returns the CID of a file/folder stored in IPFS MFS
@@ -134,41 +140,40 @@ export const publishFolder = function(folderPath: string): Promise<string> {
  * @returns CID hash of file/folder
  */
 const getFileHash = function(ipfsFilePath: string): Promise<string> {
-    return ipfsClient.files.stat(ipfsFilePath)
+  return ipfsClient.files
+    .stat(ipfsFilePath)
     .then((fileInfo: any) => {
-        let fileHash = fileInfo.cid.toString();
-        return fileHash;
+      const fileHash = fileInfo.cid.toString();
+      return fileHash;
     })
     .catch((err: any) => {
-        logError({
-            status: 500,
-            error: err,
-            statusText: `getFileHash FAILURE ${ipfsFilePath}`,
-        });
+      logError({
+        status: 500,
+        error: err,
+        statusText: `getFileHash FAILURE ${ipfsFilePath}`
+      });
 
-        return null;
+      return null;
     });
-}
+};
 
 export const deleteFolder = function(folderPath: string): Promise<boolean> {
-    return ipfsClient.files.rm(folderPath, { recursive: true })
+  return ipfsClient.files
+    .rm(folderPath, { recursive: true })
     .then(() => {
-        return true;
+      return true;
     })
     .catch((err: any) => {
-        if (err.message.includes("file does not exist"))
-        {
-            return true;
-        }
-        else
-        {
-            logError({
-                status: 500,
-                error: err,
-                statusText: `deleteFolder FAILURE: ${folderPath}`,
-            });
-            
-            return false;
-        }
-    })
-}
+      if (err.message.includes("file does not exist")) {
+        return true;
+      }
+
+      logError({
+        status: 500,
+        error: err,
+        statusText: `deleteFolder FAILURE: ${folderPath}`
+      });
+
+      return false;
+    });
+};

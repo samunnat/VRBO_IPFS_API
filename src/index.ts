@@ -3,6 +3,8 @@ import cors from "cors";
 import * as dotenv from "dotenv";
 import express from "express";
 
+import ipfsRoutes from "./routes/api/ipfs.routes";
+
 dotenv.config();
 
 const app = express();
@@ -15,7 +17,7 @@ app.use(
 );
 app.use(bodyParser.json());
 
-app.use("/api/ipfs", require("./routes/api/ipfs.routes"));
+app.use("/api/ipfs", ipfsRoutes);
 
 const PORT = process.env.PORT || 3000;
 
@@ -34,7 +36,7 @@ interface WebpackHotModule {
     data: any;
     accept(
       dependencies: string[],
-      callback?: (updatedDependencies: ModuleId[]) => void,
+      callback?: (updatedDependencies: ModuleId[]) => void
     ): void;
     accept(dependency: string, callback?: () => void): void;
     accept(errHandler?: (err: Error) => void): void;

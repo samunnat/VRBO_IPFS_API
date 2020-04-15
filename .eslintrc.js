@@ -4,8 +4,9 @@ module.exports = {
     es6: true,
   },
   extends: [
+    'airbnb-base',
     'prettier',
-    'airbnb-base'
+    'plugin:@typescript-eslint/recommended'
   ],
   globals: {
     Atomics: 'readonly',
@@ -21,6 +22,18 @@ module.exports = {
     '@typescript-eslint',
   ],
   rules: {
-    'prettier/prettier': 'error'
+    'prettier/prettier': 'error',
+    'import/extensions': 'off',
+    '@typescript-eslint/no-use-before-define': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    'func-names': 'off',
+    'no-console': 'off'
   },
+  settings: {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
+  }
 };
