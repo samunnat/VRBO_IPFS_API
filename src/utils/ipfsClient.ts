@@ -35,6 +35,22 @@ const logError = function(logObj: LogObject): void {
   // });
 };
 
+export const connectToPeer = function(peerAddress: string): Promise<boolean> {
+  console.log(`Trying to connect to ${peerAddress}`);
+
+  return ipfsClient.swarm
+    .connect(peerAddress)
+    .then((peerInfo: any) => {
+      console.log(peerInfo);
+      return true;
+    })
+    .catch((err: any) => {
+      console.log(err);
+
+      return false;
+    });
+};
+
 /**
  * Updates VRBO_Capstone folder to the latest version
  * @param folderHash IPFS hash of the latest folder version ("/ipfs/...")
